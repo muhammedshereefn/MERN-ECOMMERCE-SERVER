@@ -24,7 +24,7 @@ app.use(helmet({
 app.get("/",(req,res)=> {
     //server to client
     res.json({
-        message : "server is runn 8080"
+        message : "server is run 8080"
     })
 })
 

@@ -149,6 +149,11 @@ export async function loginController (req,res) {
        const accessToken = await generateAccessToken(user._id)
        const refreshToken = await generateRefreshToken(user._id)
 
+
+       const updateUser = await UserModel.findByIdAndUpdate(user?._id, {
+        last_login_date : new Date()
+       })
+
        const cookiesOption = {
         httpOnly : true,
         secure : true,
@@ -228,6 +233,8 @@ export async function uploadAvatar (req,res) {
        
         return res.json({
             message : "Upload Profile",
+            success : true,
+            error : false,
             data : {
                 _id : userId,
                 avatar : upload.url
@@ -268,7 +275,7 @@ export async function updateUserDetails(req,res) {
         })
 
         return res.json({
-            message : "Updated User Successfully",
+            message : "Updated successfully",
             error : false,
             success : true,
             data : updateUser
@@ -374,6 +381,11 @@ export async function verifyForgotPasswordOtp(req,res){
             })
         }
 
+        const updateUser = await UserModel.findByIdAndUpdate(user?._id,{
+            forgot_password_otp : "",
+            forgot_password_expiry : ""
+        })
+
 
         //if otp is not expire
         return res.json({
@@ -452,7 +464,7 @@ export async function resetpassword(req,res) {
 //REFRESHTOKEN 
 export async function refreshToken(req,res){
     try {
-        const refreshToken = req.cookies.refreshToken || req?.header?.authorization?.split(" ")[1]
+        const refreshToken = req.cookies.refreshToken || req?.headers?.authorization?.split(" ")[1]
 
         if(!refreshToken) {
             return res.status(401).json({
@@ -494,6 +506,33 @@ export async function refreshToken(req,res){
 
         })
         
+    } catch (error) {
+        return res.status(500).json({
+            message : error.message || error,
+            error : true,
+            success : false
+
+        })
+    }
+}
+
+//GET LOGIN USER DETAILS
+export async function userDetails(req,res){
+    try {
+        console.log("ethi");
+        
+        const userId = req.userId
+        console.log(userId);
+        
+
+        const user = await UserModel.findById(userId).select('-password -refresh_token')
+
+        return res.json({
+            message : "User details",
+            data : user,
+            error : false,
+            success : true
+        })
     } catch (error) {
         return res.status(500).json({
             message : error.message || error,
